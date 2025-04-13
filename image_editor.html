@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+     * {
+        font-size: 20px;
+        margin: 2em;
+    }
+    button {
+        background-color: #040359; 
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+    }
+    button:hover {
+        background-color: #3e8e41;
+    }
+    canvas{
+        border: 1px solid black;
+        background-color: rgb(182, 174, 174);
+    }
+    </style>
+</head>
+<body>
+    <button id="saveBtn">Save</button>
+    <button id="loadBtn">Load</button>
+    <input type="text" id="fileName" placeholder="fileName">
+    <br>
+    
+    <br>
+    <textarea id="fileContent" cols="50" rows="20"></textarea>
+    <br>
+    <canvas id="imgCanvas" width="500" height="500"></canvas>
+    
+</body>
+<script>
+    const saveBtn = document.getElementById('saveBtn');
+    const loadBtn = document.getElementById('loadBtn');
+    const fileName = document.getElementById('fileName');
+    const fileContent = document.getElementById('fileContent');
+    const imgCanvas = document.getElementById('imgCanvas');
+    const ctx = imgCanvas.getContext('2d');
+    loadBtn.addEventListener('click', () => {
+       const fileInput = document.createElement('input');
+       fileInput.type = 'file'; 
+       fileInput.accept = '.txt, image/*'; 
+       fileInput.addEventListener('change', () => {
+           const file = fileInput.files[0];
+           if (file.type.startsWith('text')) {
+               var fr = new FileReader();
+               fr.onload = function() {
+                   fileContent.value = fr.result;
+               }
+               fr.readAsText(file);
+               fileName.value = file.name;
+           } else if (file.type.startsWith('image')) {
+               const reader = new FileReader();
+               reader.onload = function(event) {
+                   const img = new Image();
+                   img.onload = function() {
+                       ctx.clearRect(0, 0, imgCanvas.width, imgCanvas.height);
+                       ctx.drawImage(img, 0, 0, imgCanvas.width, imgCanvas.height);
+                   }
+                   img.src = event.target.result;
+               }
+               reader.readAsDataURL(file);
+               fileName.value = file.name;
+           }
+       });
+       fileInput.click();
+    });
+
+    saveBtn.addEventListener('click', () => {
+        if (fileContent.value) {
+            var blob = new Blob([fileContent.value], {type: 'text/plain'});
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName.value || 'textfile.txt';
+            a.click();
+        } else {
+            const downloadLink = document.createElement('a');
+            downloadLink.href = imgCanvas.toDataURL('image/png');
+            downloadLink.download = fileName.value || 'image.png';
+            downloadLink.click();
+        }
+    });
+    saveBtn.addEventListener('click', () => {
+        const doenloadLink = document.createElement('a');
+        downloadLink.href = imgCanvas.toDataURL('image/png');
+        downloadLink.download = fileName.value;
+        downloadLink.click();
+    });
+    let drawing = false;
+    imgCanvas.addEventListener('mousedown', () => {
+        drawing = true;
+        ctx.fillStyle = `rgb(${255 * Math.random()}, ${255 * Math.random()}, ${255 * Math.random()})`;
+    });
+    imgCanvas.addEventListener('mouseup', () => {
+        drawing = false; 
+    });
+    imgCanvas.addEventListener('mousemove', (e) => {
+        if (drawing) {
+            ctx.beginPath();
+            ctx.arc(e.offsetX, e.offsetY, 20, 0, Math.PI * 2); 
+            ctx.fill();
+        }
+    });
+
+
+</script>
+</html>
